@@ -1,0 +1,29 @@
+[versions]
+agp = "8.9.2"
+kotlin = "2.1.21"
+# 5.5.0+ ships an okhttp-android AAR with minCompileSdk=37 in its metadata, which breaks any
+# consumer still compiling against API 36 (including this SDK itself). 5.4.0 is the latest
+# release that only requires minCompileSdk=36 — bump past 5.5.0 only once broad compileSdk 37
+# adoption makes that requirement safe to inherit.
+okhttp = "5.4.0"
+kotlinxSerializationJson = "1.8.1"
+kotlinxCoroutines = "1.10.2"
+androidxCredentials = "1.6.0"
+jreleaser = "1.19.0"
+junit = "4.13.2"
+robolectric = "4.14.1"
+
+[libraries]
+okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
+kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
+kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinxCoroutines" }
+androidx-credentials = { group = "androidx.credentials", name = "credentials", version.ref = "androidxCredentials" }
+androidx-credentials-play-services-auth = { group = "androidx.credentials", name = "credentials-play-services-auth", version.ref = "androidxCredentials" }
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
+
+[plugins]
+android-library = { id = "com.android.library", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+jreleaser = { id = "org.jreleaser", version.ref = "jreleaser" }
