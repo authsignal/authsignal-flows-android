@@ -11,6 +11,38 @@ class AuthsignalPasskey(tenantId: String, apiUrl: String) {
   private val api = PasskeyApiClient(tenantId, apiUrl)
   private val passkeyManager = PasskeyManager()
 
+  suspend fun register(
+    activity: Activity,
+    username: String? = null,
+    displayName: String? = null,
+    preferImmediatelyAvailableCredentials: Boolean = true,
+  ): VerifyResponse {
+    val challengeToken = TokenCache.requireChallengeToken()
+
+    val opts = api.registrationOptions(challengeToken, username, displayName)
+
+    val options = opts.registrationOptions.copy(
+      authenticatorSelection = opts.registrationOptions.authenticatorSelection.copy(
+        userVerification = "required",
+      ),
+      pubKeyCredParams = opts.registrationOptions.pubKeyCredParams.filter { it.alg != -8 },
+    )
+
+    val requestJson = Json.encodeToString(options)
+
+    val credential = passkeyManager.register(
+      activity = activity,
+      requestJson = requestJson,
+      preferImmediatelyAvailableCredentials = preferImmediatelyAvailableCredentials,
+    )
+
+    val registerResponse = api.register(challengeToken = challengeToken, credential = credential)
+
+    TokenCache.challengeToken = registerResponse.challengeToken
+
+    return registerResponse
+  }
+
   suspend fun verify(
     activity: Activity,
     autofill: Boolean = false,
