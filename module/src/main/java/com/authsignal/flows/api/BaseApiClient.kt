@@ -40,16 +40,32 @@ internal open class BaseApiClient(
     return decode(responseBody)
   }
 
+  protected suspend inline fun <reified T, reified B> postRequest(
+    url: String,
+    body: B,
+  ): T {
+    val requestBodyJson = json.encodeToString(body)
+
+    val responseBody = executeRequest(url, challengeToken = null, requestBodyJson)
+
+    return decode(responseBody)
+  }
+
   protected suspend fun executeRequest(
     url: String,
-    challengeToken: String,
+    challengeToken: String?,
     requestBodyJson: String?,
   ): String {
     val requestBuilder = Request.Builder()
       .url(url)
       .post((requestBodyJson ?: "{}").toRequestBody(jsonMediaType))
       .addHeader("Content-Type", "application/json")
-      .addHeader("X-Authsignal-Challenge-Token", challengeToken)
+
+    if (challengeToken != null) {
+      requestBuilder.addHeader("X-Authsignal-Challenge-Token", challengeToken)
+    } else {
+      requestBuilder.addHeader("X-Authsignal-Tenant", tenantId)
+    }
 
     RequestMetadata.headers(tenantId).forEach { (name, value) ->
       requestBuilder.addHeader(name, value)

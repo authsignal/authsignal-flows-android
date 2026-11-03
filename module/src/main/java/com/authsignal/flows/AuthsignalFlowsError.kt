@@ -8,9 +8,19 @@ sealed class AuthsignalFlowsError(message: String) : Exception(message) {
    * has been called.
    */
   class FlowNotInitialized : AuthsignalFlowsError(
-    "The flow has not been initialized. Call 'setChallengeToken' first."
+    "The flow has not been initialized. Provide a client ID or call 'setChallengeToken' first."
   ) {
     override val code: String = "flow_not_initialized"
+  }
+
+  /**
+   * Thrown when the session's challenge token has expired. Challenge methods start a new
+   * session automatically when a client ID is configured, but `verify` calls throw this.
+   */
+  class SessionExpired : AuthsignalFlowsError(
+    "The session has expired. Start a new challenge to continue."
+  ) {
+    override val code: String = "session_expired"
   }
 
   /**
@@ -80,6 +90,7 @@ sealed class AuthsignalFlowsError(message: String) : Exception(message) {
     fun fromApi(code: String, message: String): AuthsignalFlowsError {
       return when (code) {
         "invalid_code" -> InvalidCode(message)
+        "invalid_token" -> SessionExpired()
         else -> Unexpected(code, message)
       }
     }

@@ -7,7 +7,11 @@ import com.authsignal.flows.security.PasskeyManager
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
-class AuthsignalPasskey(tenantId: String, apiUrl: String) {
+class AuthsignalPasskey internal constructor(
+  tenantId: String,
+  apiUrl: String,
+  private val session: FlowSession,
+) {
   private val api = PasskeyApiClient(tenantId, apiUrl)
   private val passkeyManager = PasskeyManager()
 
@@ -49,9 +53,9 @@ class AuthsignalPasskey(tenantId: String, apiUrl: String) {
     preferImmediatelyAvailableCredentials: Boolean = true,
     syncCredentials: Boolean = false,
   ): VerifyResponse {
-    val challengeToken = TokenCache.requireChallengeToken()
+    val opts = session.withChallengeToken { challengeToken -> api.authenticationOptions(challengeToken) }
 
-    val opts = api.authenticationOptions(challengeToken)
+    val challengeToken = TokenCache.requireChallengeToken()
 
     val options = opts.authenticationOptions.copy(userVerification = "required")
 

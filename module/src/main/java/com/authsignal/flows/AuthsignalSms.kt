@@ -4,13 +4,17 @@ import com.authsignal.flows.api.SmsApiClient
 import com.authsignal.flows.api.models.VerifyResponse
 import com.authsignal.flows.api.models.sms.SmsChallengeResponse
 
-class AuthsignalSms(tenantId: String, apiUrl: String) {
+class AuthsignalSms internal constructor(
+  tenantId: String,
+  apiUrl: String,
+  private val session: FlowSession,
+) {
   private val api = SmsApiClient(tenantId, apiUrl)
 
   suspend fun challenge(phoneNumber: String? = null): SmsChallengeResponse {
-    val challengeToken = TokenCache.requireChallengeToken()
-
-    return api.challenge(challengeToken = challengeToken, phoneNumber = phoneNumber)
+    return session.withChallengeToken { challengeToken ->
+      api.challenge(challengeToken = challengeToken, phoneNumber = phoneNumber)
+    }
   }
 
   suspend fun verify(verificationCode: String): VerifyResponse {

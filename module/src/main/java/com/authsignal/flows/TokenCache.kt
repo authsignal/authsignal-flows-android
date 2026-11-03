@@ -13,6 +13,8 @@ internal object TokenCache {
       }
     }
 
+  var codeVerifier: String? = null
+
   fun requireChallengeToken(): String {
     val token = _challengeToken
 
