@@ -11,5 +11,6 @@ class AuthsignalFlows(tenantId: String, apiUrl: String, clientId: String? = null
   fun setChallengeToken(challengeToken: String) {
     TokenCache.challengeToken = challengeToken
     TokenCache.codeVerifier = null
+    TokenCache.isCompleted = false
   }
 }

@@ -18,7 +18,7 @@ class AuthsignalWhatsapp(tenantId: String, apiUrl: String) {
 
     val verifyResponse = api.verify(challengeToken = challengeToken, verificationCode = verificationCode)
 
-    TokenCache.challengeToken = verifyResponse.challengeToken
+    TokenCache.update(verifyResponse)
 
     return verifyResponse
   }

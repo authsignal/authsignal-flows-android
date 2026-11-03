@@ -1,5 +1,7 @@
 package com.authsignal.flows
 
+import com.authsignal.flows.api.models.FlowState
+import com.authsignal.flows.api.models.VerifyResponse
 import com.authsignal.flows.logger.Logger
 
 internal object TokenCache {
@@ -14,6 +16,12 @@ internal object TokenCache {
     }
 
   var codeVerifier: String? = null
+  var isCompleted = false
+
+  fun update(response: VerifyResponse) {
+    challengeToken = response.challengeToken
+    isCompleted = response.action.state == FlowState.CHALLENGE_SUCCEEDED
+  }
 
   fun requireChallengeToken(): String {
     val token = _challengeToken

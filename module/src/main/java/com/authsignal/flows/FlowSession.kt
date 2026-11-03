@@ -24,7 +24,11 @@ internal class FlowSession(tenantId: String, apiUrl: String, private val clientI
   }
 
   private suspend fun currentOrNewChallengeToken(): String {
-    TokenCache.challengeToken?.let { return it }
+    val challengeToken = TokenCache.challengeToken
+
+    if (challengeToken != null && !TokenCache.isCompleted) {
+      return challengeToken
+    }
 
     val clientId = clientId ?: return TokenCache.requireChallengeToken()
 
@@ -42,6 +46,7 @@ internal class FlowSession(tenantId: String, apiUrl: String, private val clientI
 
     TokenCache.challengeToken = response.challengeToken
     TokenCache.codeVerifier = codeVerifier
+    TokenCache.isCompleted = false
 
     return response.challengeToken
   }

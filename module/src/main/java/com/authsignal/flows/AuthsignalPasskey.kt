@@ -42,7 +42,7 @@ class AuthsignalPasskey internal constructor(
 
     val registerResponse = api.register(challengeToken = challengeToken, credential = credential)
 
-    TokenCache.challengeToken = registerResponse.challengeToken
+    TokenCache.update(registerResponse)
 
     return registerResponse
   }
@@ -70,7 +70,7 @@ class AuthsignalPasskey internal constructor(
 
     val verifyResponse = api.verify(challengeToken = challengeToken, credential = credential)
 
-    TokenCache.challengeToken = verifyResponse.challengeToken
+    TokenCache.update(verifyResponse)
 
     return verifyResponse
   }
