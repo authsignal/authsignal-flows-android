@@ -1,12 +1,21 @@
 package com.authsignal.flows
 
-class AuthsignalFlows(tenantId: String, apiUrl: String, clientId: String? = null) {
-  private val session = FlowSession(tenantId, apiUrl, clientId)
+import android.content.Context
 
-  val email: AuthsignalEmail = AuthsignalEmail(tenantId, apiUrl, session)
-  val sms: AuthsignalSms = AuthsignalSms(tenantId, apiUrl, session)
-  val whatsapp: AuthsignalWhatsapp = AuthsignalWhatsapp(tenantId, apiUrl)
-  val passkey: AuthsignalPasskey = AuthsignalPasskey(tenantId, apiUrl, session)
+class AuthsignalFlows(
+  context: Context,
+  tenantId: String,
+  apiUrl: String,
+  clientId: String? = null,
+) {
+  val session: AuthsignalSession = AuthsignalSession(context.applicationContext, tenantId, apiUrl)
+
+  private val flow = FlowContext(tenantId, apiUrl, clientId, session)
+
+  val email: AuthsignalEmail = AuthsignalEmail(tenantId, apiUrl, flow)
+  val sms: AuthsignalSms = AuthsignalSms(tenantId, apiUrl, flow)
+  val whatsapp: AuthsignalWhatsapp = AuthsignalWhatsapp(tenantId, apiUrl, flow)
+  val passkey: AuthsignalPasskey = AuthsignalPasskey(tenantId, apiUrl, flow)
 
   fun setChallengeToken(challengeToken: String) {
     TokenCache.challengeToken = challengeToken

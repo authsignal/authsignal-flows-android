@@ -7,12 +7,12 @@ import com.authsignal.flows.api.models.email.EmailChallengeResponse
 class AuthsignalEmail internal constructor(
   tenantId: String,
   apiUrl: String,
-  private val session: FlowSession,
+  private val flow: FlowContext,
 ) {
   private val api = EmailApiClient(tenantId, apiUrl)
 
   suspend fun challenge(email: String? = null): EmailChallengeResponse {
-    return session.withChallengeToken { challengeToken ->
+    return flow.withChallengeToken { challengeToken ->
       api.challenge(challengeToken = challengeToken, email = email)
     }
   }
@@ -22,7 +22,7 @@ class AuthsignalEmail internal constructor(
 
     val verifyResponse = api.verify(challengeToken = challengeToken, verificationCode = verificationCode)
 
-    TokenCache.update(verifyResponse)
+    flow.update(verifyResponse)
 
     return verifyResponse
   }

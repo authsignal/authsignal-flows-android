@@ -4,7 +4,11 @@ import com.authsignal.flows.api.WhatsappApiClient
 import com.authsignal.flows.api.models.VerifyResponse
 import com.authsignal.flows.api.models.whatsapp.WhatsappChallengeResponse
 
-class AuthsignalWhatsapp(tenantId: String, apiUrl: String) {
+class AuthsignalWhatsapp internal constructor(
+  tenantId: String,
+  apiUrl: String,
+  private val flow: FlowContext,
+) {
   private val api = WhatsappApiClient(tenantId, apiUrl)
 
   suspend fun challenge(phoneNumber: String? = null): WhatsappChallengeResponse {
@@ -18,7 +22,7 @@ class AuthsignalWhatsapp(tenantId: String, apiUrl: String) {
 
     val verifyResponse = api.verify(challengeToken = challengeToken, verificationCode = verificationCode)
 
-    TokenCache.update(verifyResponse)
+    flow.update(verifyResponse)
 
     return verifyResponse
   }

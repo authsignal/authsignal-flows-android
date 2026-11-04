@@ -86,7 +86,7 @@ internal open class BaseApiClient(
     response.use {
       val bodyString = it.body?.string().orEmpty()
 
-      if (it.code != 200) {
+      if (!it.isSuccessful) {
         val errorBody = try {
           json.decodeFromString<ApiErrorBody>(bodyString)
         } catch (e: SerializationException) {

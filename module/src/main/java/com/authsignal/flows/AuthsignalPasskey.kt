@@ -10,7 +10,7 @@ import kotlinx.serialization.json.Json
 class AuthsignalPasskey internal constructor(
   tenantId: String,
   apiUrl: String,
-  private val session: FlowSession,
+  private val flow: FlowContext,
 ) {
   private val api = PasskeyApiClient(tenantId, apiUrl)
   private val passkeyManager = PasskeyManager()
@@ -42,7 +42,7 @@ class AuthsignalPasskey internal constructor(
 
     val registerResponse = api.register(challengeToken = challengeToken, credential = credential)
 
-    TokenCache.update(registerResponse)
+    flow.update(registerResponse)
 
     return registerResponse
   }
@@ -53,7 +53,7 @@ class AuthsignalPasskey internal constructor(
     preferImmediatelyAvailableCredentials: Boolean = true,
     syncCredentials: Boolean = false,
   ): VerifyResponse {
-    val opts = session.withChallengeToken { challengeToken -> api.authenticationOptions(challengeToken) }
+    val opts = flow.withChallengeToken { challengeToken -> api.authenticationOptions(challengeToken) }
 
     val challengeToken = TokenCache.requireChallengeToken()
 
@@ -70,7 +70,7 @@ class AuthsignalPasskey internal constructor(
 
     val verifyResponse = api.verify(challengeToken = challengeToken, credential = credential)
 
-    TokenCache.update(verifyResponse)
+    flow.update(verifyResponse)
 
     return verifyResponse
   }

@@ -1,26 +1,56 @@
 package com.authsignal.flows
 
-import com.authsignal.flows.api.SessionApiClient
+import com.authsignal.flows.api.FlowApiClient
+import com.authsignal.flows.api.models.FlowState
+import com.authsignal.flows.api.models.VerifyResponse
 import com.authsignal.flows.extensions.toBase64UrlString
 import com.authsignal.flows.logger.Logger
 import java.security.MessageDigest
 import java.security.SecureRandom
 
-internal class FlowSession(tenantId: String, apiUrl: String, private val clientId: String?) {
-  private val api = SessionApiClient(tenantId, apiUrl)
+internal class FlowContext(
+  tenantId: String,
+  apiUrl: String,
+  private val clientId: String?,
+  private val session: AuthsignalSession,
+) {
+  private val api = FlowApiClient(tenantId, apiUrl)
 
   suspend fun <T> withChallengeToken(operation: suspend (String) -> T): T {
     val challengeToken = currentOrNewChallengeToken()
 
     return try {
       operation(challengeToken)
-    } catch (e: AuthsignalFlowsError.SessionExpired) {
+    } catch (e: AuthsignalFlowsError.FlowExpired) {
       val clientId = clientId ?: throw e
 
-      Logger.i("The session has expired. Starting a new session.")
+      // Only flows started by the SDK have a code verifier; others came from 'setChallengeToken'
+      if (TokenCache.codeVerifier == null) {
+        throw e
+      }
 
-      operation(startSession(clientId))
+      Logger.i("The flow has expired. Starting a new flow.")
+
+      operation(startFlow(clientId))
     }
+  }
+
+  suspend fun update(response: VerifyResponse) {
+    TokenCache.update(response)
+
+    // Flows started with 'setChallengeToken' are verified by the integrator's backend
+    val codeVerifier = TokenCache.codeVerifier
+
+    if (response.action.state != FlowState.CHALLENGE_SUCCEEDED || codeVerifier == null) {
+      return
+    }
+
+    val verifyResponse = api.verify(challengeToken = response.challengeToken, codeVerifier = codeVerifier)
+
+    val tokens = verifyResponse.session
+      ?: throw AuthsignalFlowsError.Unexpected("session_unavailable", "The flow completed without a session.")
+
+    session.save(tokens)
   }
 
   private suspend fun currentOrNewChallengeToken(): String {
@@ -32,10 +62,10 @@ internal class FlowSession(tenantId: String, apiUrl: String, private val clientI
 
     val clientId = clientId ?: return TokenCache.requireChallengeToken()
 
-    return startSession(clientId)
+    return startFlow(clientId)
   }
 
-  private suspend fun startSession(clientId: String): String {
+  private suspend fun startFlow(clientId: String): String {
     val codeVerifier = generateCodeVerifier()
 
     val response = api.start(
