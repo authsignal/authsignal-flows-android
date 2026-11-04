@@ -40,12 +40,30 @@ sealed class AuthsignalFlowsError(message: String) : Exception(message) {
   }
 
   /**
-   * Thrown when the user cancels a passkey request.
+   * Thrown when the device has no passkeys available, or no in-app credential.
    */
-  class CredentialNotFound : AuthsignalFlowsError(
-    "The device has no passkeys available."
-  ) {
+  class CredentialNotFound(
+    message: String = "The device has no passkeys available."
+  ) : AuthsignalFlowsError(message) {
     override val code: String = "credential_not_found"
+  }
+
+  /**
+   * Thrown by `inapp.createPin` when the PIN isn't at least 4 digits.
+   */
+  class InvalidPinFormat : AuthsignalFlowsError(
+    "The PIN must be at least 4 digits."
+  ) {
+    override val code: String = "invalid_pin_format"
+  }
+
+  /**
+   * Thrown by `inapp.verifyPin` when the PIN doesn't match.
+   */
+  class InvalidPin : AuthsignalFlowsError(
+    "The PIN is incorrect."
+  ) {
+    override val code: String = "invalid_pin"
   }
 
   /**

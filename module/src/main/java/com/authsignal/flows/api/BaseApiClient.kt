@@ -1,5 +1,6 @@
 package com.authsignal.flows.api
 
+import android.util.Base64
 import com.authsignal.flows.AuthsignalFlowsError
 import com.authsignal.flows.logger.Logger
 import kotlinx.coroutines.Dispatchers
@@ -51,6 +52,25 @@ internal open class BaseApiClient(
     return decode(responseBody)
   }
 
+  protected suspend inline fun <reified T> getRequestWithBasicAuth(url: String): T {
+    val requestBuilder = Request.Builder()
+      .url(url)
+      .get()
+      .addHeader("Authorization", basicAuth())
+
+    return decode(sendRequest(requestBuilder))
+  }
+
+  protected suspend inline fun <reified T, reified B> postRequestWithBasicAuth(url: String, body: B): T {
+    val requestBuilder = Request.Builder()
+      .url(url)
+      .post(json.encodeToString(body).toRequestBody(jsonMediaType))
+      .addHeader("Content-Type", "application/json")
+      .addHeader("Authorization", basicAuth())
+
+    return decode(sendRequest(requestBuilder))
+  }
+
   protected suspend fun executeRequest(
     url: String,
     challengeToken: String?,
@@ -67,6 +87,10 @@ internal open class BaseApiClient(
       requestBuilder.addHeader("X-Authsignal-Tenant", tenantId)
     }
 
+    return sendRequest(requestBuilder)
+  }
+
+  protected suspend fun sendRequest(requestBuilder: Request.Builder): String {
     RequestMetadata.headers(tenantId).forEach { (name, value) ->
       requestBuilder.addHeader(name, value)
     }
@@ -110,6 +134,10 @@ internal open class BaseApiClient(
 
       return bodyString
     }
+  }
+
+  protected fun basicAuth(): String {
+    return "Basic ${Base64.encodeToString("$tenantId:".toByteArray(), Base64.NO_WRAP)}"
   }
 
   protected inline fun <reified T> decode(bodyString: String): T {
