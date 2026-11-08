@@ -24,7 +24,6 @@ internal class FlowContext(
     } catch (e: AuthsignalFlowsError.FlowExpired) {
       val clientId = clientId ?: throw e
 
-      // Only flows started by the SDK have a code verifier; others came from 'setChallengeToken'
       if (TokenCache.codeVerifier == null) {
         throw e
       }
@@ -38,7 +37,6 @@ internal class FlowContext(
   suspend fun update(response: VerifyResponse) {
     TokenCache.update(response)
 
-    // Flows started with 'setChallengeToken' are verified by the integrator's backend
     val codeVerifier = TokenCache.codeVerifier
 
     if (response.action.state != FlowState.CHALLENGE_SUCCEEDED || codeVerifier == null) {
@@ -96,7 +94,6 @@ internal class FlowContext(
   }
 
   private companion object {
-    // Temporary until the sign-in action code can be configured on the app client
     const val ACTION_CODE = "signInOrSignUpV2"
   }
 }

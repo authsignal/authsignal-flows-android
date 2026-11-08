@@ -5,7 +5,6 @@ import com.authsignal.flows.extensions.toBase64String
 import com.authsignal.flows.logger.Logger
 import java.security.KeyStore.PrivateKeyEntry
 import java.security.Signature
-import kotlin.math.floor
 
 internal object Signer {
   fun sign(message: String, key: PrivateKeyEntry): String {
@@ -21,13 +20,5 @@ internal object Signer {
 
       throw AuthsignalFlowsError.Unexpected("signing_error", e.message ?: "Error signing message.")
     }
-  }
-
-  fun signWithTimeBasedMessage(key: PrivateKeyEntry): String {
-    val secondsSinceEpoch = (System.currentTimeMillis() / 1000).toDouble()
-
-    val message = floor(secondsSinceEpoch / (60 * 10)).toString()
-
-    return sign(message, key)
   }
 }

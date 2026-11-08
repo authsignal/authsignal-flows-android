@@ -17,6 +17,7 @@ class AuthsignalFlows(
   val whatsapp: AuthsignalWhatsapp = AuthsignalWhatsapp(tenantId, apiUrl, flow)
   val passkey: AuthsignalPasskey = AuthsignalPasskey(tenantId, apiUrl, flow)
   val inapp: AuthsignalInApp = AuthsignalInApp(context.applicationContext, tenantId, apiUrl, flow)
+  val push: AuthsignalPush = AuthsignalPush(tenantId, apiUrl, flow)
 
   fun setChallengeToken(challengeToken: String) {
     TokenCache.challengeToken = challengeToken

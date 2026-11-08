@@ -14,13 +14,6 @@ class AuthsignalSession internal constructor(context: Context, tenantId: String,
   private val store = SessionStore(context)
   private val mutex = Mutex()
 
-  /**
-   * Returns a valid access token, refreshing it first if it's about to expire.
-   *
-   * Returns null if there is no session, or if the session can no longer be refreshed.
-   *
-   * @throws AuthsignalFlowsError.NetworkError if a refresh fails to reach the API. The session is kept.
-   */
   suspend fun getAccessToken(): String? = mutex.withLock {
     val storedSession = store.load() ?: return@withLock null
 
@@ -31,9 +24,6 @@ class AuthsignalSession internal constructor(context: Context, tenantId: String,
     refresh(storedSession)?.accessToken
   }
 
-  /**
-   * Ends the session. Local state is always cleared, even if the session can't be revoked on the server.
-   */
   suspend fun revoke() {
     val storedSession = mutex.withLock {
       store.load()?.also { store.clear() }
@@ -58,7 +48,6 @@ class AuthsignalSession internal constructor(context: Context, tenantId: String,
 
       refreshedSession
     } catch (e: AuthsignalFlowsError.FlowExpired) {
-      // The API reports a revoked or expired refresh token as 'invalid_token'
       store.clear()
 
       null

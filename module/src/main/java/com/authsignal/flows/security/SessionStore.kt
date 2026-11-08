@@ -38,7 +38,6 @@ internal class SessionStore(context: Context) {
 
       Json.decodeFromString<StoredSession>(decrypt(encrypted, ivBytes))
     } catch (e: Exception) {
-      // e.g. preferences restored from a backup onto a device without the original key
       Logger.e("Error loading session: ${e.message}")
 
       clear()

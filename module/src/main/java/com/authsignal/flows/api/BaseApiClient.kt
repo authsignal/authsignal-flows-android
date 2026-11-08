@@ -61,6 +61,36 @@ internal open class BaseApiClient(
     return decode(sendRequest(requestBuilder))
   }
 
+  protected suspend inline fun <reified T> postRequestWithBasicAuth(url: String): T {
+    val requestBuilder = Request.Builder()
+      .url(url)
+      .post("".toRequestBody(jsonMediaType))
+      .addHeader("Authorization", basicAuth())
+
+    return decode(sendRequest(requestBuilder))
+  }
+
+  protected suspend inline fun <reified T, reified B> patchRequestWithBasicAuth(url: String, body: B): T {
+    val requestBuilder = Request.Builder()
+      .url(url)
+      .patch(json.encodeToString(body).toRequestBody(jsonMediaType))
+      .addHeader("Content-Type", "application/json")
+      .addHeader("Authorization", basicAuth())
+
+    return decode(sendRequest(requestBuilder))
+  }
+
+  protected suspend inline fun <reified T> getRequest(url: String, headers: Map<String, String>): T {
+    val requestBuilder = Request.Builder()
+      .url(url)
+      .get()
+      .addHeader("X-Authsignal-Tenant", tenantId)
+
+    headers.forEach { (name, value) -> requestBuilder.addHeader(name, value) }
+
+    return decode(sendRequest(requestBuilder))
+  }
+
   protected suspend inline fun <reified T, reified B> postRequestWithBasicAuth(url: String, body: B): T {
     val requestBuilder = Request.Builder()
       .url(url)

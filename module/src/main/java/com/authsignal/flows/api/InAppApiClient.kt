@@ -4,7 +4,6 @@ import com.authsignal.flows.api.models.VerifyResponse
 import com.authsignal.flows.api.models.inapp.AddInAppCredentialRequest
 import com.authsignal.flows.api.models.inapp.CredentialResponse
 import com.authsignal.flows.api.models.inapp.InAppChallengeResponse
-import com.authsignal.flows.api.models.inapp.RemoveCredentialResponse
 import com.authsignal.flows.api.models.inapp.SignedCredentialRequest
 import com.authsignal.flows.extensions.toBase64UrlString
 
@@ -15,14 +14,6 @@ internal class InAppApiClient(tenantId: String, apiUrl: String) : BaseApiClient(
     val url = "$apiUrl/v1/client/user-authenticators/in-app?publicKey=$encodedKey"
 
     return getRequestWithBasicAuth(url)
-  }
-
-  suspend fun removeCredential(publicKey: String, signature: String): RemoveCredentialResponse {
-    val url = "$apiUrl/v1/client/user-authenticators/in-app/remove"
-
-    val body = SignedCredentialRequest(publicKey = publicKey, signature = signature)
-
-    return postRequestWithBasicAuth(url, body)
   }
 
   suspend fun addCredential(challengeToken: String, publicKey: String, deviceName: String): VerifyResponse {

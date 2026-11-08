@@ -13,10 +13,6 @@ sealed class AuthsignalFlowsError(message: String) : Exception(message) {
     override val code: String = "flow_not_initialized"
   }
 
-  /**
-   * Thrown when the flow's challenge token has expired. Challenge methods start a new
-   * flow automatically when a client ID is configured, but `verify` calls throw this.
-   */
   class FlowExpired : AuthsignalFlowsError(
     "The flow has expired. Start a new challenge to continue."
   ) {
@@ -40,7 +36,7 @@ sealed class AuthsignalFlowsError(message: String) : Exception(message) {
   }
 
   /**
-   * Thrown when the device has no passkeys available, or no in-app credential.
+   * Thrown when the user cancels a passkey request.
    */
   class CredentialNotFound(
     message: String = "The device has no passkeys available."
@@ -48,18 +44,12 @@ sealed class AuthsignalFlowsError(message: String) : Exception(message) {
     override val code: String = "credential_not_found"
   }
 
-  /**
-   * Thrown by `inapp.createPin` when the PIN isn't at least 4 digits.
-   */
   class InvalidPinFormat : AuthsignalFlowsError(
     "The PIN must be at least 4 digits."
   ) {
     override val code: String = "invalid_pin_format"
   }
 
-  /**
-   * Thrown by `inapp.verifyPin` when the PIN doesn't match.
-   */
   class InvalidPin : AuthsignalFlowsError(
     "The PIN is incorrect."
   ) {
