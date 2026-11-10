@@ -15,7 +15,7 @@ class AuthsignalFlows(
   val email: AuthsignalEmail = AuthsignalEmail(tenantId, apiUrl, flow)
   val sms: AuthsignalSms = AuthsignalSms(tenantId, apiUrl, flow)
   val whatsapp: AuthsignalWhatsapp = AuthsignalWhatsapp(tenantId, apiUrl, flow)
-  val passkey: AuthsignalPasskey = AuthsignalPasskey(tenantId, apiUrl, flow)
+  val passkey: AuthsignalPasskey = AuthsignalPasskey(context.applicationContext, tenantId, apiUrl, flow)
   val inapp: AuthsignalInApp = AuthsignalInApp(context.applicationContext, tenantId, apiUrl, flow)
   val push: AuthsignalPush = AuthsignalPush(tenantId, apiUrl, flow)
 

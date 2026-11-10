@@ -1,6 +1,7 @@
 package com.authsignal.flows
 
 import android.app.Activity
+import android.content.Context
 import com.authsignal.flows.api.PasskeyApiClient
 import com.authsignal.flows.api.models.VerifyResponse
 import com.authsignal.flows.security.PasskeyManager
@@ -8,12 +9,14 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 class AuthsignalPasskey internal constructor(
+  context: Context,
   tenantId: String,
   apiUrl: String,
   private val flow: FlowContext,
 ) {
   private val api = PasskeyApiClient(tenantId, apiUrl)
   private val passkeyManager = PasskeyManager()
+  private val prefs = context.getSharedPreferences("authsignal_passkey", Context.MODE_PRIVATE)
 
   suspend fun register(
     activity: Activity,
@@ -41,6 +44,8 @@ class AuthsignalPasskey internal constructor(
     )
 
     val registerResponse = api.register(challengeToken = challengeToken, credential = credential)
+
+    storeCredentialId(credential.rawId, options.user.name)
 
     flow.update(registerResponse)
 
@@ -70,6 +75,8 @@ class AuthsignalPasskey internal constructor(
 
     val verifyResponse = api.verify(challengeToken = challengeToken, credential = credential)
 
+    storeCredentialId(credential.rawId, verifyResponse.user.username)
+
     flow.update(verifyResponse)
 
     return verifyResponse
@@ -79,7 +86,41 @@ class AuthsignalPasskey internal constructor(
     passkeyManager.cancel()
   }
 
+  suspend fun shouldPromptToCreatePasskey(username: String? = null): Boolean {
+    val credentialId = prefs.getString(getCredentialIdKey(username), null) ?: return true
+
+    return try {
+      api.getPasskeyAuthenticator(credentialId)
+
+      false
+    } catch (e: AuthsignalFlowsError) {
+      if (e.code != "invalid_credential") {
+        throw e
+      }
+
+      true
+    }
+  }
+
   fun isSupported(): Boolean {
     return passkeyManager.isSupported()
+  }
+
+  private fun storeCredentialId(credentialId: String, username: String?) {
+    prefs.edit().apply {
+      putString(getCredentialIdKey(null), credentialId)
+
+      username?.let { putString(getCredentialIdKey(it), credentialId) }
+
+      apply()
+    }
+  }
+
+  private fun getCredentialIdKey(username: String?): String {
+    return username?.let { "${CREDENTIAL_ID_KEY}_$it" } ?: CREDENTIAL_ID_KEY
+  }
+
+  private companion object {
+    const val CREDENTIAL_ID_KEY = "@as_passkey_credential_id"
   }
 }
